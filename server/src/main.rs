@@ -9,44 +9,51 @@ use futures_channel::mpsc::{unbounded, UnboundedSender};
 use futures_util::{future, pin_mut, stream::TryStreamExt, StreamExt};
 
 use tokio::net::{TcpListener, TcpStream};
-use tokio_tungstenite::tungstenite::{protocol::Message, handshake::server::Request};
+use tokio_tungstenite::tungstenite::{protocol::Message, handshake::server::Request, http::HeaderValue};
 
 type Tx = UnboundedSender<Message>;
-type PeerMap = Arc<Mutex<HashMap<SocketAddr, Tx>>>;
+type PeerMap = Arc<Mutex<HashMap<String, Tx>>>;
 
 async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: SocketAddr) {
     println!("Incoming TCP connection from: {}", addr);
 
-    let ws_stream = tokio_tungstenite::accept_hdr_async(raw_stream, move |request: &Request, response| {
+    let mut client_header: Option<HeaderValue> = Default::default();
+    let ws_stream = tokio_tungstenite::accept_hdr_async(raw_stream, |request: &Request, response| {
+        client_header = request.headers().get("sec-websocket-protocol").cloned();
+
         Ok(response)
     })
         .await
         .expect("Error during the websocket handshake occurred");
 
-    println!("WebSocket connection established: {}", addr);
+    if let Some(client_header) = client_header {
+        let client_id = client_header.to_str().unwrap().to_string();
 
-    let (tx, rx) = unbounded();
-    peer_map.lock().unwrap().insert(addr, tx);
+        println!("WebSocket connection established: {}", addr);
 
-    let (outgoing, incoming) = ws_stream.split();
+        let (tx, rx) = unbounded();
+        peer_map.lock().unwrap().insert(client_id.clone(), tx);
 
-    let broadcast_incoming = incoming.try_for_each(|msg| {
-        future::ok(())
-    });
+        let (outgoing, incoming) = ws_stream.split();
 
-    let receive_from_others = rx.map(Ok).forward(outgoing);
+        let broadcast_incoming = incoming.try_for_each(|msg| {
+            println!("msg received websocket: {}", msg.to_string());
 
-    pin_mut!(broadcast_incoming, receive_from_others);
-    future::select(broadcast_incoming, receive_from_others).await;
+            future::ok(())
+        });
 
-    println!("{} disconnected", addr);
-    peer_map.lock().unwrap().remove(&addr);
+        let receive_from_others = rx.map(Ok).forward(outgoing);
+
+        pin_mut!(broadcast_incoming, receive_from_others);
+        future::select(broadcast_incoming, receive_from_others).await;
+
+        println!("{} disconnected", addr);
+        peer_map.lock().unwrap().remove(&client_id);
+    }
 }
 
-#[tokio::main]
-async fn main() -> Result<(), IoError> {
+async fn init_tcp_listener() {
     let addr = "0.0.0.0:8081";
-
     let state = PeerMap::new(Mutex::new(HashMap::new()));
 
     let try_socket = TcpListener::bind(addr).await;
@@ -56,6 +63,11 @@ async fn main() -> Result<(), IoError> {
     while let Ok((stream, addr)) = listener.accept().await {
         tokio::spawn(handle_connection(state.clone(), stream, addr));
     }
+}
+
+#[tokio::main]
+async fn main() -> Result<(), IoError> {
+    init_tcp_listener().await;
 
     Ok(())
 }

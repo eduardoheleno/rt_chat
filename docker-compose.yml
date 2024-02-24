@@ -1,18 +1,18 @@
 version: '3.2'
 services:
-  # rabbitmq:
-  #   image: rabbitmq:management
-  #   hostname: rabbitmq
-  #   restart: on-failure
-  #   command: ["bash", "-c", "chmod 400 /var/lib/rabbitmq/.erlang.cookie; rabbitmq-server"]
-  #   environment:
-  #     RABBITMQ_DEFAULT_USER: admin
-  #     RABBITMQ_DEFAULT_PASS: admin
-  #   ports:
-  #     - 15672:15672
-  #   volumes:
-  #     - ./docker/rabbitmq/:/var/lib/rabbitmq
-  #     - ./docker/rabbitmq/log:/var/log/rabbitmq
+  rabbitmq:
+    image: rabbitmq:management
+    hostname: rabbitmq
+    restart: on-failure
+    command: ["bash", "-c", "chmod 400 /var/lib/rabbitmq/.erlang.cookie; rabbitmq-server"]
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - 15672:15672
+    volumes:
+      - ./docker/rabbitmq/:/var/lib/rabbitmq
+      - ./docker/rabbitmq/log:/var/log/rabbitmq
 
   server:
     hostname: server
@@ -25,20 +25,11 @@ services:
     volumes:
       - ./server/:/usr/src/app
 
-  client:
-    hostname: client
+  consumer:
+    hostname: consumer
     build:
-      context: ./client/
+      context: ./consumer/
       dockerfile: Dockerfile
     restart: on-failure
-    ports:
-      - 80:80
-
-  # consumer:
-  #   hostname: consumer
-  #   build:
-  #     context: ./consumer/
-  #     dockerfile: Dockerfile
-  #   restart: on-failure
-  #   volumes:
-  #     - ./consumer/:/usr/src/app
+    volumes:
+      - ./consumer/:/usr/src/app
