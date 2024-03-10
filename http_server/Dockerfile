@@ -1,9 +1,13 @@
-FROM rust:latest
+FROM node:20.11.1-alpine3.19
 
 WORKDIR /usr/src/app
 
-RUN cargo install cargo-watch
+RUN npm i -g @nestjs/cli
+
+COPY package*.json .
+
+RUN npm install
 
 COPY . .
 
-CMD ["cargo", "watch", "-c", "-w", "src", "-x", "run"]
+CMD ["nest", "start", "--watch"]
