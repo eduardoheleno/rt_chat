@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CatsModule } from './cats/cats.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { UserModule } from './user/user.module';
       database: 'rt_chat_db',
       synchronize: true,
       autoLoadEntities: true
-    })
+    }),
+    AuthModule
   ]
 })
 

@@ -1,11 +1,21 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { CreateUserDto } from './create-user.dto';
-import { CreateValidation } from './validations/create-validation.pipe';
+import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UserService } from './user.service';
+import { User } from './user.entity';
+import { DefaultUserValidation } from './validations/default-user-validation.pipe';
+import { CreateUserInterceptor } from './interceptors/create-user.interceptor';
 
 @Controller('user')
 export class UserController {
+  constructor(private userService: UserService) {}
+
+  @UseInterceptors(CreateUserInterceptor)
   @Post()
-  create(@Body(new CreateValidation()) createUserDto: CreateUserDto) {
-    console.log(createUserDto);
+  async create(@Body(new DefaultUserValidation()) createUserDto: CreateUserDto): Promise<User> {
+    return await this.userService.insert(createUserDto);
   }
+
+  // private delay(ms: number): Promise<any> {
+  //   return new Promise(resolve => setTimeout(resolve, ms));
+  // }
 }

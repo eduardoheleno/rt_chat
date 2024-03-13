@@ -3,7 +3,7 @@ import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 
 @Injectable()
-export class CreateValidation implements PipeTransform<any> {
+export class DefaultUserValidation implements PipeTransform<any> {
   async transform(value: any, { metatype }: ArgumentMetadata) {
     const object = plainToInstance(metatype, value);
     const errors = await validate(object);
