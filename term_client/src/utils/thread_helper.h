@@ -2,6 +2,7 @@
 #define THREAD_HELPER_H
 
 #define REFRESH_FRAME_CODE 1
-#define EXEC_UI_HANDLER_CODE 2
+#define EXEC_HANDLERS_CODE 2
+#define EXIT_CODE 3
 
 #endif

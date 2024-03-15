@@ -3,7 +3,6 @@
 
 #include <ncurses.h>
 
-void login_listener(WINDOW *w);
-int username_listener(WINDOW *w);
+int login_listener(void *arg);
 
 #endif

@@ -11,49 +11,47 @@ typedef int (*functionp_t)(void *arg);
 functionp_t ui_handler;
 functionp_t input_handler;
 
-mtx_t ui_mtx;
-mtx_t input_mtx;
+cnd_t execution_code_cnd;
+mtx_t execution_code_mtx;
 
-int ui_thread_code_execution = 0;
-
-// essa função observa o valor de "ui_thread_code_execution"
-// a variável será alterada por uma outra thread que executará edições práticas na UI
-// esse looping serve basicamente para checar se a thread que está fazendo alterações na UI
-// precisa que a tela seja atualizada ou se a thread antiga da UI já foi finalizada e se
-// deve iniciar uma nova
-//
-// possivelmente será necessário utilizar os signals ou mutexes para administrar essa variável
-int ui_thread_handler(void *arg) {
-    WINDOW *w = (WINDOW *) arg;
-    thrd_t handler_thread;
-
-    while(1) {
-	switch(ui_thread_code_execution) {
-	    case REFRESH_FRAME_CODE:
-		wrefresh(w);
-		break;
-	    case EXEC_UI_HANDLER_CODE:
-		thrd_create(&handler_thread, ui_handler, NULL);
-		break;
-	}
-    }
-    // mtx_lock(&ui_mtx);
-    // ui_handler(w);
-    //
-    // mtx_unlock(&ui_mtx);
-    return 0;
-}
+int ui_thread_execution_code = 0;
 
 int main() {
     WINDOW *w = initscr();
 
     ui_handler = draw_text_inputs;
-    // input_handler = login_listener;
+    input_handler = login_listener;
 
-    thrd_t ui_thread;
+    thrd_t ui_thread_handler;
+    thrd_t input_thread_handler;
 
-    thrd_create(&ui_thread, ui_thread_handler, w);
-    // mtx_init(&mutex, mtx_plain);
+    cnd_init(&execution_code_cnd);
+    mtx_init(&execution_code_mtx, mtx_plain);
+
+    thrd_create(&ui_thread_handler, ui_handler, w);
+    thrd_create(&input_thread_handler, input_handler, w);
+
+    for(;;) {
+	cnd_wait(&execution_code_cnd, &execution_code_mtx);
+
+	switch(ui_thread_execution_code) {
+	    case REFRESH_FRAME_CODE:
+		wrefresh(w);
+		break;
+	    case EXEC_HANDLERS_CODE:
+		// TODO: guarantee that the ui_thread_handler will be ended before create a new one
+		thrd_create(&ui_thread_handler, ui_handler, w);
+		thrd_create(&input_thread_handler, input_handler, w);
+		break;
+	}
+
+	if (ui_thread_execution_code == EXIT_CODE) {
+	    break;
+	}
+
+	ui_thread_execution_code = 0;
+	mtx_unlock(&execution_code_mtx);
+    }
 
     endwin();
 
