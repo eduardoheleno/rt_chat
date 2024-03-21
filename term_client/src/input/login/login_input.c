@@ -3,7 +3,7 @@
 
 #include "login_input.h"
 #include "../../ui/login/login_ui.h"
-#include "../../utils/cursor.h"
+#include "../../utils/cursor/cursor.h"
 
 char* username_listener(WINDOW *w) {
     int minx_pos = sizeof(TYPE_YOUR_USERNAME_TEXT) - 1;

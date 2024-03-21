@@ -15,6 +15,11 @@ export class UserController {
     return await this.userService.insert(createUserDto);
   }
 
+  @Post('test')
+  salve(): string {
+    return 'test';
+  }
+
   // private delay(ms: number): Promise<any> {
   //   return new Promise(resolve => setTimeout(resolve, ms));
   // }
