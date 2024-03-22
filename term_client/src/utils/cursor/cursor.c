@@ -1,7 +1,7 @@
+#include "cursor.h"
+
 #include <stdlib.h>
 #include <string.h>
-
-#include "cursor.h"
 
 void add_data(CursorData **h_data, char c) {
     if (*h_data == NULL) {

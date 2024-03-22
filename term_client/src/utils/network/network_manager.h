@@ -13,6 +13,9 @@
 
 #define HTTP_REQUEST_S "%s %s HTTP/1.1\r\nHost: %s\r\nContent-Type: %s\r\nAccept: */*\r\nContent-Length: %zu\r\n\r\n%s"
 
+#define AUTH_USER_B "{\"nickName\": \"%s\", \"password\": \"%s\"}"
+#define AUTH_USER_B_SIZE 32
+
 #define SERVER_PORT 3000
 #define HOST "localhost"
 

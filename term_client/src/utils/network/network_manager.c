@@ -19,6 +19,7 @@ char* build_request(Request *r) {
 }
 
 int send_request(char *message, char *response_buf) {
+    // TODO: execute this in a different thread
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct hostent *server;
     struct sockaddr_in serv_addr;

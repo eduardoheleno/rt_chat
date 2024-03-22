@@ -1,6 +1,6 @@
-#include <threads.h>
-
 #include "thread_helper.h"
+
+#include <threads.h>
 
 extern int g_ui_thread_execution_code;
 extern cnd_t g_execution_code_cnd;
