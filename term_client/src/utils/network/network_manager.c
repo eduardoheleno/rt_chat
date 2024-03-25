@@ -1,5 +1,7 @@
 #include "network_manager.h"
 
+#include <stdbool.h>
+
 char* build_request(Request *r) {
     char *message = malloc(sizeof(char) * MESSAGE_BUFFER_SIZE);
     size_t content_length = strlen(r->content);
@@ -57,6 +59,52 @@ int send_request(char *message, char *response_buf) {
     } while(received < total_bytes);
 
     close(sockfd);
+    free(message);
 
     return 0;
+}
+
+char* extract_access_token(char *response) {
+    // TODO: make this a generic JSON extractor
+    size_t s_size = strlen(ACCESS_TOKEN_INDEX);
+    char s_buffer[s_size], *s_cp = response;
+    int s_index = 0;
+    bool is_index_found = false;
+
+    do {
+	memcpy(s_buffer, s_cp++, s_size);
+	if (strcmp(s_buffer, ACCESS_TOKEN_INDEX) == 0) {
+	    is_index_found = true;
+	    s_index += s_size;
+
+	    break;
+	}
+
+	s_index++;
+    } while(s_index + s_size < strlen(response));
+
+    if (is_index_found) {
+	int start_index, end_index;
+
+	for(;;) {
+	    if (response[s_index++] == '"') {
+		start_index = s_index;
+	    }
+
+	    if (response[s_index] == '"') {
+		end_index = s_index;
+		break;
+	    }
+	}
+
+	size_t token_size = end_index - start_index;
+	char *access_token = malloc(token_size + 1);
+
+	memcpy(access_token, &response[start_index], token_size);
+	access_token[token_size] = '\0';
+
+	return access_token;
+    }
+
+    perror("'access_token' wasn't found.'");
 }

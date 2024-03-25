@@ -15,23 +15,6 @@ mtx_t g_execution_code_mtx;
 int g_ui_thread_execution_code = 0;
 
 int main() {
-    // char response[RESPONSE_BUFFER_SIZE];
-    //
-    // Request r;
-    // r.type = "POST";
-    // r.host = HOST;
-    // r.path = "/user";
-    // r.content_type = "application/json";
-    //
-    // char *request_content = "{\"nickName\": \"test5\", \"password\": \"salve\"}";
-    // r.content = request_content;
-    //
-    // char *request = build_request(&r);
-    //
-    // send_request(request, response);
-    //
-    // printf("%s", response);
-
     WINDOW *w = initscr();
     noecho();
     cbreak();

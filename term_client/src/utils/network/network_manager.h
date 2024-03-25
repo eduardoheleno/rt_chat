@@ -16,6 +16,8 @@
 #define AUTH_USER_B "{\"nickName\": \"%s\", \"password\": \"%s\"}"
 #define AUTH_USER_B_SIZE 32
 
+#define ACCESS_TOKEN_INDEX "\"access_token\":"
+
 #define SERVER_PORT 3000
 #define HOST "localhost"
 
@@ -29,5 +31,6 @@ typedef struct {
 
 char* build_request(Request *r);
 int send_request(char *message, char *response_buf);
+char* extract_access_token(char *response);
 
 #endif

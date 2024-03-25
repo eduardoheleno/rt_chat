@@ -22,12 +22,29 @@ char* password_listener(WINDOW *w) {
 
 int login_listener(void *arg) {
     WINDOW *w = (WINDOW *) arg;
+    Request r;
+    char response[RESPONSE_BUFFER_SIZE];
 
     char *nickname_listener_v = username_listener(w);
     char *password_listener_v = password_listener(w);
 
     char *content = malloc(AUTH_USER_B_SIZE + strlen(nickname_listener_v) + strlen(password_listener_v));
     sprintf(content, AUTH_USER_B, nickname_listener_v, password_listener_v);
+
+    r.type = "POST";
+    r.host = HOST;
+    r.path="/auth/login";
+    r.content_type = "application/json";
+    r.content = content;
+
+    char *request = build_request(&r);
+    send_request(request, response);
+
+    char *access_token = extract_access_token(response);
+
+    mvwprintw(w, 15, 0, "%s", access_token);
+    mvwprintw(w, 16, 0, "%s", response);
+    wrefresh(w);
 
     return 0;
 }
