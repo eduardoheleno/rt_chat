@@ -1,6 +1,7 @@
 #include "network_manager.h"
 
 #include <stdbool.h>
+#include <time.h>
 
 char* build_request(Request *r) {
     char *message = malloc(sizeof(char) * MESSAGE_BUFFER_SIZE);
@@ -64,6 +65,26 @@ int send_request(char *message, char *response_buf) {
     return 0;
 }
 
+int connect_websocket() {
+    int sockfd;
+    struct sockaddr_in server_addr;
+    char buffer[1024];
+
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+	perror("Socket creation failed!");
+	exit(1);
+    }
+
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(8081);
+
+    if (inet_pton(AF_INET, "localhost", &server_addr.sin_addr) <= 0) {
+	perror("Invalid address/Address not supported!");
+	exit(1);
+    }
+}
+
 char* extract_access_token(char *response) {
     // TODO: make this a generic JSON extractor
     size_t s_size = strlen(ACCESS_TOKEN_INDEX);
@@ -107,4 +128,21 @@ char* extract_access_token(char *response) {
     }
 
     perror("'access_token' wasn't found.'");
+    return NULL;
+}
+
+char *generate_masking_key() {
+    // 32-bit
+    char *key = malloc(4);
+
+    srand(time(NULL));
+    
+    int min_number = 33;
+    int max_number = 126;
+
+    for (int i = 0; i < 4; ++i) {
+	key[i] = rand() % (max_number + 1 - min_number) + min_number;
+    }
+
+    return key;
 }

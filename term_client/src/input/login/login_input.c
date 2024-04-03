@@ -42,9 +42,5 @@ int login_listener(void *arg) {
 
     char *access_token = extract_access_token(response);
 
-    mvwprintw(w, 15, 0, "%s", access_token);
-    mvwprintw(w, 16, 0, "%s", response);
-    wrefresh(w);
-
     return 0;
 }

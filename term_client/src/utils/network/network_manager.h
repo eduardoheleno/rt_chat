@@ -3,6 +3,7 @@
 
 #include <sys/socket.h>
 #include <netdb.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -21,6 +22,25 @@
 #define SERVER_PORT 3000
 #define HOST "localhost"
 
+typedef enum {
+    CONTINUATION,
+    TEXT,
+    BINARY,
+    CLOSE,
+    PING,
+    PONG
+} ws_opcode;
+
+typedef struct {
+    unsigned int fin;
+    ws_opcode opcode;
+    unsigned int mask;
+    unsigned int payload_length;
+    char *masking_key;
+    char *payload_data;
+    char *application_data;
+} ws_frame;
+
 typedef struct {
     char *type;
     char *host;
@@ -29,8 +49,11 @@ typedef struct {
     char *content;
 } Request;
 
-char* build_request(Request *r);
+char *build_request(Request *r);
 int send_request(char *message, char *response_buf);
-char* extract_access_token(char *response);
+int connect_websocket();
+char *extract_access_token(char *response);
+
+char *generate_masking_key();
 
 #endif
