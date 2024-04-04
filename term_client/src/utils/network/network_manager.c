@@ -154,10 +154,30 @@ unsigned int opcode_val(ws_opcode opcode) {
     }
 }
 
+char *xor_encrypt(char *payload, char masking_key[4]) {
+    char *masked_payload = malloc(strlen(payload) * sizeof(char));
+    size_t payload_bit_s = strlen(payload) * sizeof(char) * 8;
+
+    int mk_counter = 0;
+    for (int i = 0; i < strlen(payload); ++i) {
+	if (mk_counter >= strlen(masking_key)) {
+	    mk_counter = 0;
+	}
+
+	masked_payload[i] = payload[i] ^ masking_key[mk_counter];
+	mk_counter++;
+    }
+
+    return masked_payload;
+}
+
 char *build_ws_frame(ws_frame *frame) {
     size_t frame_size = sizeof_frame(frame->payload_length);
     char *built_frame = malloc(frame_size);
     unsigned int opcode = opcode_val(frame->opcode);
+
+    int masking_key_index = 2;
+    int payload_data_index = 6;
 
     built_frame[0] |= (frame->fin << 0);
     built_frame[0] |= (0 << 1);
@@ -168,44 +188,13 @@ char *build_ws_frame(ws_frame *frame) {
     built_frame[1] |= (frame->mask << 0);
     built_frame[1] |= (frame->payload_length << 1);
 
-    printf("%s\n", frame->masking_key);
-    
-    for (int i = 2; i <= 5; ++i) {
-	built_frame[i] |= frame->masking_key[i - 2];
+    for (int i = masking_key_index; i <= 5; ++i) {
+	built_frame[i] |= frame->masking_key[i - masking_key_index];
     }
 
- //    for (int i = 2; i <= 5; ++i) {
-	// for (int j = 0; j < 8; ++j) {
-	//     printf("%i", (built_frame[i] >> j) & 1);
-	// }
-	// printf(" ");
- //    }
-
-    // printf("fin: %i\n", (*built_frame >> 0) & 1);
-    // printf("rsv1: %i\n", (*built_frame >> 1) & 1);
-    // printf("rsv2: %i\n", (*built_frame >> 2) & 1);
-    // printf("rsv3: %i\n", (*built_frame >> 3) & 1);
-    //
-    // printf("%i", (built_frame[0] >> 4) & 1);
-    // printf("%i", (built_frame[0] >> 5) & 1);
-    // printf("%i", (built_frame[0] >> 6) & 1);
-    // printf("%i\n", (built_frame[0] >> 7) & 1);
-    //
-    // printf("mask: %i\n", (built_frame[1] >> 0) & 1);
-    //
-    // printf("%i", (built_frame[1] >> 1) & 1);
-    // printf("%i", (built_frame[1] >> 2) & 1);
-    // printf("%i", (built_frame[1] >> 3) & 1);
-    // printf("%i", (built_frame[1] >> 4) & 1);
-    // printf("%i", (built_frame[1] >> 5) & 1);
-    // printf("%i", (built_frame[1] >> 6) & 1);
-    // printf("%i\n", (built_frame[1] >> 7) & 1);
-
- //    for (int i = 0; i < frame_size; ++i) {
-	// for (int j = 0; j < 8; ++j) {
-	//     printf("%d", (built_frame[i] >> j) & 1);
-	// }
- //    }
+    for (int i = payload_data_index; i <= frame_size; ++i) {
+	built_frame[i] |= frame->payload_data[i - payload_data_index];
+    }
 
     return built_frame;
 }

@@ -33,8 +33,7 @@ int main() {
     frame.opcode = TEXT;
     // length in bytes
     frame.payload_length = (strlen(payload)*sizeof(char));
-    frame.payload_data = payload;
-    frame.application_data = payload;
+    frame.payload_data = xor_encrypt(payload, key);
 
     char *built_frame = build_ws_frame(&frame);
 

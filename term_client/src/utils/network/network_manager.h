@@ -38,7 +38,6 @@ typedef struct {
     unsigned int payload_length;
     char *masking_key;
     char *payload_data;
-    char *application_data;
 } ws_frame;
 
 typedef struct {
@@ -56,5 +55,6 @@ char *extract_access_token(char *response);
 
 char *build_ws_frame(ws_frame *frame);
 char *generate_masking_key();
+char *xor_encrypt(char *payload, char masking_key[4]);
 
 #endif
