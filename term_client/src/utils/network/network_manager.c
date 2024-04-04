@@ -163,22 +163,43 @@ char *build_ws_frame(ws_frame *frame) {
     built_frame[0] |= (0 << 1);
     built_frame[0] |= (0 << 2);
     built_frame[0] |= (0 << 3);
-
     built_frame[0] |= (opcode << 4);
 
     built_frame[1] |= (frame->mask << 0);
+    built_frame[1] |= (frame->payload_length << 1);
 
-    printf("fin: %i\n", (*built_frame >> 0) & 1);
-    printf("rsv1: %i\n", (*built_frame >> 1) & 1);
-    printf("rsv2: %i\n", (*built_frame >> 2) & 1);
-    printf("rsv3: %i\n", (*built_frame >> 3) & 1);
+    printf("%s\n", frame->masking_key);
+    
+    for (int i = 2; i <= 5; ++i) {
+	built_frame[i] |= frame->masking_key[i - 2];
+    }
 
-    printf("%i", (built_frame[0] >> 4) & 1);
-    printf("%i", (built_frame[0] >> 5) & 1);
-    printf("%i", (built_frame[0] >> 6) & 1);
-    printf("%i\n", (built_frame[0] >> 7) & 1);
+ //    for (int i = 2; i <= 5; ++i) {
+	// for (int j = 0; j < 8; ++j) {
+	//     printf("%i", (built_frame[i] >> j) & 1);
+	// }
+	// printf(" ");
+ //    }
 
-    printf("mask: %i\n", (built_frame[1] >> 0) & 1);
+    // printf("fin: %i\n", (*built_frame >> 0) & 1);
+    // printf("rsv1: %i\n", (*built_frame >> 1) & 1);
+    // printf("rsv2: %i\n", (*built_frame >> 2) & 1);
+    // printf("rsv3: %i\n", (*built_frame >> 3) & 1);
+    //
+    // printf("%i", (built_frame[0] >> 4) & 1);
+    // printf("%i", (built_frame[0] >> 5) & 1);
+    // printf("%i", (built_frame[0] >> 6) & 1);
+    // printf("%i\n", (built_frame[0] >> 7) & 1);
+    //
+    // printf("mask: %i\n", (built_frame[1] >> 0) & 1);
+    //
+    // printf("%i", (built_frame[1] >> 1) & 1);
+    // printf("%i", (built_frame[1] >> 2) & 1);
+    // printf("%i", (built_frame[1] >> 3) & 1);
+    // printf("%i", (built_frame[1] >> 4) & 1);
+    // printf("%i", (built_frame[1] >> 5) & 1);
+    // printf("%i", (built_frame[1] >> 6) & 1);
+    // printf("%i\n", (built_frame[1] >> 7) & 1);
 
  //    for (int i = 0; i < frame_size; ++i) {
 	// for (int j = 0; j < 8; ++j) {
