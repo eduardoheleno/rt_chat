@@ -54,6 +54,7 @@ int send_request(char *message, char *response_buf);
 int connect_websocket();
 char *extract_access_token(char *response);
 
+char *build_ws_frame(ws_frame *frame);
 char *generate_masking_key();
 
 #endif

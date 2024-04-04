@@ -131,6 +131,64 @@ char* extract_access_token(char *response) {
     return NULL;
 }
 
+size_t sizeof_frame(int payload_length) {
+    // 6 is the base size (in bytes) of a frame with a payload_length less or equal to 125
+    return 6 + payload_length;
+}
+
+unsigned int opcode_val(ws_opcode opcode) {
+    switch (opcode) {
+	case CONTINUATION:
+	    return 0x00;
+	case TEXT:
+	    return 0x01;
+	case BINARY:
+	    return 0x02;
+	case CLOSE:
+	    return 0x08;
+	case PING:
+	    return 0x09;
+	case PONG:
+	    return 0x0A;
+	default: perror("undefined opcode");
+    }
+}
+
+char *build_ws_frame(ws_frame *frame) {
+    size_t frame_size = sizeof_frame(frame->payload_length);
+    char *built_frame = malloc(frame_size);
+    unsigned int opcode = opcode_val(frame->opcode);
+
+    built_frame[0] |= (frame->fin << 0);
+    built_frame[0] |= (0 << 1);
+    built_frame[0] |= (0 << 2);
+    built_frame[0] |= (0 << 3);
+
+    built_frame[0] |= (opcode << 4);
+
+    built_frame[1] |= (frame->mask << 0);
+
+    printf("fin: %i\n", (*built_frame >> 0) & 1);
+    printf("rsv1: %i\n", (*built_frame >> 1) & 1);
+    printf("rsv2: %i\n", (*built_frame >> 2) & 1);
+    printf("rsv3: %i\n", (*built_frame >> 3) & 1);
+
+    printf("%i", (built_frame[0] >> 4) & 1);
+    printf("%i", (built_frame[0] >> 5) & 1);
+    printf("%i", (built_frame[0] >> 6) & 1);
+    printf("%i\n", (built_frame[0] >> 7) & 1);
+
+    printf("mask: %i\n", (built_frame[1] >> 0) & 1);
+
+ //    for (int i = 0; i < frame_size; ++i) {
+	// for (int j = 0; j < 8; ++j) {
+	//     printf("%d", (built_frame[i] >> j) & 1);
+	// }
+ //    }
+
+    return built_frame;
+}
+
 char *generate_masking_key() {
     // 32-bit
     char *key = malloc(4);

@@ -24,67 +24,19 @@ int g_ui_thread_execution_code = 0;
 
 int main() {
     char *key = generate_masking_key();
-    printf("%s", key);
-
-    char *payload = "payload";
-    char masked_payload[strlen(payload)*sizeof(char)];
-    
-    size_t payload_s = strlen(payload) * (sizeof(char) * 8);
-
-    char *masking_key = "1234";
-
-    int mk_counter = 0;
-    for (int i = 0; i < strlen(payload); ++i) {
-	if (mk_counter >= strlen(masking_key)) {
-	    mk_counter = 0;
-	}
-
-	masked_payload[i] = payload[i] ^ masking_key[mk_counter];
-	mk_counter++;
-    }
-
-    for (int i = 0; i < strlen(payload)*sizeof(char); ++i) {
-	printf("%c", masked_payload[i]);
-    }
+    char *payload = "teste";
 
     ws_frame frame;
     frame.fin = 1;
-    frame.opcode = TEXT;
     frame.mask = 1;
-    frame.payload_length = payload_s;
-    frame.masking_key = masking_key;
+    frame.masking_key = key;
+    frame.opcode = TEXT;
+    // length in bytes
+    frame.payload_length = (strlen(payload)*sizeof(char));
+    frame.payload_data = payload;
+    frame.application_data = payload;
 
-    int sockfd;
-    struct sockaddr_in server_addr;
-    struct hostent *server;
-
-    server = gethostbyname("localhost");
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
-    memset(&server_addr, 0 ,sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(8081);
-
-    memcpy(&server_addr.sin_addr.s_addr, server->h_addr_list[0], server->h_length);
-
-    connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
-
-    char *test = "GET / HTTP/1.1\r\n"
-	"user_id: 123\r\n"
-	"Host: localhost:8081\r\n"
-	"Upgrade: websocket\r\n"
-	"Connection: Upgrade\r\n"
-	"Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
-	"Sec-WebSocket-Version: 13\r\n"
-	"\r\n";
-
-    send(sockfd, test, strlen(test), 0);
-
-    char buffer[1024];
-    recv(sockfd, buffer, sizeof(buffer), 0);
-
-    printf("%s", buffer);
-    for(;;){}
+    char *built_frame = build_ws_frame(&frame);
 
  //    WINDOW *w = initscr();
  //    noecho();
