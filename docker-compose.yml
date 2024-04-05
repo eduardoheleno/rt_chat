@@ -12,16 +12,16 @@ services:
     volumes:
       - ./docker/mysql/:/var/lib/mysql
 
-  http_server:
-    hostname: http_server
-    build:
-      context: ./http_server/
-      dockerfile: Dockerfile
-    restart: on-failure
-    ports:
-      - 3000:3000
-    volumes:
-      - ./http_server/:/usr/src/app
+  # http_server:
+  #   hostname: http_server
+  #   build:
+  #     context: ./http_server/
+  #     dockerfile: Dockerfile
+  #   restart: on-failure
+  #   ports:
+  #     - 3000:3000
+  #   volumes:
+  #     - ./http_server/:/usr/src/app
 
   # rabbitmq:
   #   image: rabbitmq:management
@@ -36,17 +36,6 @@ services:
   #   volumes:
   #     - ./docker/rabbitmq/:/var/lib/rabbitmq
   #     - ./docker/rabbitmq/log:/var/log/rabbitmq
-
-  websocket_server:
-    hostname: websocket_server
-    build:
-      context: ./websocket_server/
-      dockerfile: Dockerfile
-    restart: on-failure
-    ports:
-      - 8081:8081
-    volumes:
-      - ./websocket_server/:/usr/src/app
 
   # consumer:
   #   hostname: consumer

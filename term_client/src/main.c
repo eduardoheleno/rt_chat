@@ -36,6 +36,19 @@ int main() {
     frame.payload_data = xor_encrypt(payload, key);
 
     char *built_frame = build_ws_frame(&frame);
+    int sockfd = connect_websocket();
+
+    int bytes = send(sockfd, built_frame, strlen(built_frame), 0);
+
+    char buffer[1024];
+    recv(sockfd, buffer, sizeof(buffer), 0);
+
+    printf("%s\n", built_frame);
+    printf("%s", buffer);
+
+    // printf("%s", buffer);
+
+    // for(;;){}
 
  //    WINDOW *w = initscr();
  //    noecho();

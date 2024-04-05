@@ -68,21 +68,36 @@ int send_request(char *message, char *response_buf) {
 int connect_websocket() {
     int sockfd;
     struct sockaddr_in server_addr;
-    char buffer[1024];
+    struct hostent *server;
 
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-	perror("Socket creation failed!");
-	exit(1);
-    }
+    server = gethostbyname("localhost");
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(8081);
 
-    if (inet_pton(AF_INET, "localhost", &server_addr.sin_addr) <= 0) {
-	perror("Invalid address/Address not supported!");
-	exit(1);
+    memcpy(&server_addr.sin_addr.s_addr, server->h_addr_list[0], server->h_length);
+
+    if (connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+	perror("The connection between the client and the WebSocket server could not be established");
     }
+
+    char *ws_handshake = "GET / HTTP/1.1\r\n"
+	"user_id: 123\r\n"
+	"Host: localhost:8081\r\n"
+	"Upgrade: websocket\r\n"
+	"Connection: Upgrade\r\n"
+	"Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+	"Sec-WebSocket-Version: 13\r\n"
+	"\r\n";
+
+    send(sockfd, ws_handshake, strlen(ws_handshake), 0);
+
+    char buffer[1024];
+    recv(sockfd, buffer, sizeof(buffer), 0);
+
+    return sockfd;
 }
 
 char* extract_access_token(char *response) {
