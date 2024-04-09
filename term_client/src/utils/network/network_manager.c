@@ -186,22 +186,49 @@ char *xor_encrypt(char *payload, char masking_key[4]) {
     return masked_payload;
 }
 
+void set_bit(char *byte, int position, int value) {
+    if (value) {
+	*byte |= (1 << position);
+    } else {
+	*byte &= ~(1 << position);
+    }
+}
+
+void byte_frame_to_big_endian(char *frame, size_t frame_size) {
+    for (int j = 0; j < frame_size; ++j) {
+	// 4 because its already swapping the leftover bytes
+	for (int i = 0; i < 4; ++i) {
+	    int bit = (frame[j] >> i) & 1;
+	    int mirror_bit = (frame[j] >> (7 - i)) & 1;
+
+	    set_bit(&frame[j], 7 - i, bit);
+	    set_bit(&frame[j], i, mirror_bit);
+	}
+    }
+}
+
 char *build_ws_frame(ws_frame *frame) {
     size_t frame_size = sizeof_frame(frame->payload_length);
     char *built_frame = malloc(frame_size);
     unsigned int opcode = opcode_val(frame->opcode);
 
+    memset(built_frame, 0, frame_size);
+
     int masking_key_index = 2;
     int payload_data_index = 6;
 
-    built_frame[0] |= (frame->fin << 0);
-    built_frame[0] |= (0 << 1);
-    built_frame[0] |= (0 << 2);
-    built_frame[0] |= (0 << 3);
-    built_frame[0] |= (opcode << 4);
+    built_frame[0] |= (frame->fin << 7);
 
-    built_frame[1] |= (frame->mask << 0);
-    built_frame[1] |= (frame->payload_length << 1);
+    built_frame[0] |= (0 << 6);
+    built_frame[0] |= (0 << 5);
+    built_frame[0] |= (0 << 4);
+
+    built_frame[0] |= (opcode << 0);
+
+    built_frame[1] |= (frame->mask << 7);
+
+    // TODO: payload_length should be in big endian byte order
+    built_frame[1] |= (frame->payload_length << 0);
 
     for (int i = masking_key_index; i <= 5; ++i) {
 	built_frame[i] |= frame->masking_key[i - masking_key_index];

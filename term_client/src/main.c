@@ -38,13 +38,13 @@ int main() {
     char *built_frame = build_ws_frame(&frame);
     int sockfd = connect_websocket();
 
-    int bytes = send(sockfd, built_frame, strlen(built_frame), 0);
+    send(sockfd, built_frame, strlen(built_frame), 0);
 
     char buffer[1024];
     recv(sockfd, buffer, sizeof(buffer), 0);
 
-    printf("%s\n", built_frame);
-    printf("%s", buffer);
+    // printf("%s\n", built_frame);
+    // printf("%s", buffer);
 
     // printf("%s", buffer);
 
