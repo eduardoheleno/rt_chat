@@ -40,6 +40,10 @@ int login_listener(void *arg) {
     char *request = build_request(&r);
     send_request(request, response);
 
+    free(content);
+    free(nickname_listener_v);
+    free(password_listener_v);
+
     char *access_token = extract_access_token(response);
 
     return 0;

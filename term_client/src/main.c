@@ -23,71 +23,44 @@ mtx_t g_execution_code_mtx;
 int g_ui_thread_execution_code = 0;
 
 int main() {
-    char *key = generate_masking_key();
-    char *payload = "teste";
+    WINDOW *w = initscr();
+    noecho();
+    cbreak();
+    keypad(w, true);
 
-    ws_frame frame;
-    frame.fin = 1;
-    frame.mask = 1;
-    frame.masking_key = key;
-    frame.opcode = TEXT;
-    // length in bytes
-    frame.payload_length = (strlen(payload)*sizeof(char));
-    frame.payload_data = xor_encrypt(payload, key);
+    ui_handler = draw_text_inputs;
+    input_handler = login_listener;
 
-    char *built_frame = build_ws_frame(&frame);
-    int sockfd = connect_websocket();
+    thrd_t ui_thread_handler;
+    thrd_t input_thread_handler;
 
-    send(sockfd, built_frame, strlen(built_frame), 0);
+    cnd_init(&g_execution_code_cnd);
+    mtx_init(&g_execution_code_mtx, mtx_plain);
 
-    char buffer[1024];
-    recv(sockfd, buffer, sizeof(buffer), 0);
+    thrd_create(&ui_thread_handler, ui_handler, w);
+    thrd_create(&input_thread_handler, input_handler, w);
 
-    // printf("%s\n", built_frame);
-    // printf("%s", buffer);
+    for(;;) {
+	cnd_wait(&g_execution_code_cnd, &g_execution_code_mtx);
 
-    // printf("%s", buffer);
+	switch(g_ui_thread_execution_code) {
+	    case EXEC_HANDLERS_CODE:
+		wclear(w);
+		// TODO: guarantee that the ui_thread_handler will be ended before create a new one
+		thrd_create(&ui_thread_handler, ui_handler, w);
+		thrd_create(&input_thread_handler, input_handler, w);
+		break;
+	}
 
-    // for(;;){}
+	if (g_ui_thread_execution_code == EXIT_CODE) {
+	    break;
+	}
 
- //    WINDOW *w = initscr();
- //    noecho();
- //    cbreak();
- //    keypad(w, true);
-	//
- //    ui_handler = draw_text_inputs;
- //    input_handler = login_listener;
-	//
- //    thrd_t ui_thread_handler;
- //    thrd_t input_thread_handler;
-	//
- //    cnd_init(&g_execution_code_cnd);
- //    mtx_init(&g_execution_code_mtx, mtx_plain);
-	//
- //    thrd_create(&ui_thread_handler, ui_handler, w);
- //    thrd_create(&input_thread_handler, input_handler, w);
-	//
- //    for(;;) {
-	// cnd_wait(&g_execution_code_cnd, &g_execution_code_mtx);
-	//
-	// switch(g_ui_thread_execution_code) {
-	//     case EXEC_HANDLERS_CODE:
-	// 	wclear(w);
-	// 	// TODO: guarantee that the ui_thread_handler will be ended before create a new one
-	// 	thrd_create(&ui_thread_handler, ui_handler, w);
-	// 	thrd_create(&input_thread_handler, input_handler, w);
-	// 	break;
-	// }
-	//
-	// if (g_ui_thread_execution_code == EXIT_CODE) {
-	//     break;
-	// }
-	//
-	// g_ui_thread_execution_code = 0;
-	// mtx_unlock(&g_execution_code_mtx);
- //    }
-	//
- //    endwin();
+	g_ui_thread_execution_code = 0;
+	mtx_unlock(&g_execution_code_mtx);
+    }
+
+    endwin();
 
     return 0;
 }

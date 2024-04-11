@@ -63,6 +63,20 @@ void remove_data(int index, CursorData **h_data) {
     free(h_data_buffer);
 }
 
+// TODO: fix corrupted top size memory error
+void free_cursor_data(CursorData **h_data) {
+    size_t d_size = data_size(*h_data);
+    CursorData *free_buffer;
+
+    for (int i = 0; i < d_size; ++i) {
+	free_buffer = *h_data;
+	*h_data = (*h_data)->n_node;
+	free(free_buffer);
+    }
+
+    *h_data = NULL;
+}
+
 size_t data_size(CursorData *h_data) {
     CursorData *h_data_buffer = h_data;
     size_t d_size = 0;
@@ -97,7 +111,10 @@ char* user_input_listener(WINDOW *w, int minx_pos, int y_pos, bool is_password) 
 	int pressed_char = wgetch(w);
 
 	if (pressed_char == '\n') {
-	    return concatenate_string(c.h_data);
+	    char *c_string = concatenate_string(c.h_data);
+	    free_cursor_data(&c.h_data);
+
+	    return c_string;
 	}
 
 	if (pressed_char == KEY_BACKSPACE) {
@@ -105,7 +122,6 @@ char* user_input_listener(WINDOW *w, int minx_pos, int y_pos, bool is_password) 
 		mvwdelch(w, y_pos, --ui_pos_tracker);
 		remove_data(--c.x, &c.h_data);
 	    }
-
 	    continue;
 	}
 
@@ -116,7 +132,6 @@ char* user_input_listener(WINDOW *w, int minx_pos, int y_pos, bool is_password) 
 		wmove(w, y_pos, --ui_pos_tracker);
 		wrefresh(w);
 	    }
-
 	    continue;
 	}
 
@@ -127,7 +142,6 @@ char* user_input_listener(WINDOW *w, int minx_pos, int y_pos, bool is_password) 
 		wmove(w, y_pos, ++ui_pos_tracker);
 		wrefresh(w);
 	    }
-
 	    continue;
 	}
 

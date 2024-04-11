@@ -218,16 +218,12 @@ char *build_ws_frame(ws_frame *frame) {
     int payload_data_index = 6;
 
     built_frame[0] |= (frame->fin << 7);
-
     built_frame[0] |= (0 << 6);
     built_frame[0] |= (0 << 5);
     built_frame[0] |= (0 << 4);
-
     built_frame[0] |= (opcode << 0);
 
     built_frame[1] |= (frame->mask << 7);
-
-    // TODO: payload_length should be in big endian byte order
     built_frame[1] |= (frame->payload_length << 0);
 
     for (int i = masking_key_index; i <= 5; ++i) {
