@@ -103,7 +103,7 @@ char* concatenate_string(CursorData *h_data) {
     return c_string;
 }
 
-char* user_input_listener(WINDOW *w, int minx_pos, int y_pos, bool is_password) {
+char* user_input_listener(WINDOW *w, int minx_pos, int y_pos) {
     Cursor c; c.x = 0; c.h_data = NULL;
     int ui_pos_tracker = minx_pos;
 
@@ -145,11 +145,7 @@ char* user_input_listener(WINDOW *w, int minx_pos, int y_pos, bool is_password) 
 	    continue;
 	}
 
-	if (is_password) {
-	    mvwaddch(w, y_pos, ui_pos_tracker++, '*');
-	} else {
-	    mvwaddch(w, y_pos, ui_pos_tracker++, pressed_char);
-	}
+	mvwaddch(w, y_pos, ui_pos_tracker++, pressed_char);
 	c.x++;
 
 	add_data(&c.h_data, pressed_char);
