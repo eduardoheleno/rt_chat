@@ -1,5 +1,3 @@
-#include <threads.h>
-
 #include "./ui/login/login_ui.h"
 #include "./ui/chat/chat_ui.h"
 
@@ -8,6 +6,7 @@
 
 #include "./utils/thread/thread_helper.h"
 
+#include <threads.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -19,6 +18,7 @@ cnd_t g_execution_code_cnd;
 mtx_t g_execution_code_mtx;
 
 int g_ui_thread_execution_code = 0;
+int g_sockfd;
 
 int main() {
     WINDOW *w = initscr();

@@ -1,4 +1,5 @@
 #include "network_manager.h"
+#include <ncurses.h>
 
 #include <stdbool.h>
 #include <time.h>
@@ -65,7 +66,7 @@
 //     return 0;
 // }
 
-int connect_websocket() {
+int connect_websocket(char *username) {
     int sockfd;
     struct sockaddr_in server_addr;
     struct hostent *server;
@@ -83,8 +84,8 @@ int connect_websocket() {
 	perror("The connection between the client and the WebSocket server could not be established");
     }
 
-    char *ws_handshake = "GET / HTTP/1.1\r\n"
-	"user_id: 123\r\n"
+    char *handshake_message = "GET / HTTP/1.1\r\n"
+	"username: %s\r\n"
 	"Host: localhost:8081\r\n"
 	"Upgrade: websocket\r\n"
 	"Connection: Upgrade\r\n"
@@ -92,8 +93,13 @@ int connect_websocket() {
 	"Sec-WebSocket-Version: 13\r\n"
 	"\r\n";
 
+    size_t handshake_size = (strlen(handshake_message) + strlen(username) * sizeof(char));
+    char ws_handshake[handshake_size];
+    sprintf(ws_handshake, handshake_message, username);
+
     send(sockfd, ws_handshake, strlen(ws_handshake), 0);
 
+    // TODO: check if the request was upgraded to websocket connection
     char buffer[1024];
     recv(sockfd, buffer, sizeof(buffer), 0);
 
@@ -140,26 +146,26 @@ char *xor_encrypt(char *payload, char masking_key[4]) {
     return masked_payload;
 }
 
-void set_bit(char *byte, int position, int value) {
-    if (value) {
-	*byte |= (1 << position);
-    } else {
-	*byte &= ~(1 << position);
-    }
-}
+// void set_bit(char *byte, int position, int value) {
+//     if (value) {
+// 	*byte |= (1 << position);
+//     } else {
+// 	*byte &= ~(1 << position);
+//     }
+// }
 
-void byte_frame_to_big_endian(char *frame, size_t frame_size) {
-    for (int j = 0; j < frame_size; ++j) {
-	// 4 because its already swapping the leftover bytes
-	for (int i = 0; i < 4; ++i) {
-	    int bit = (frame[j] >> i) & 1;
-	    int mirror_bit = (frame[j] >> (7 - i)) & 1;
-
-	    set_bit(&frame[j], 7 - i, bit);
-	    set_bit(&frame[j], i, mirror_bit);
-	}
-    }
-}
+// void byte_frame_to_big_endian(char *frame, size_t frame_size) {
+//     for (int j = 0; j < frame_size; ++j) {
+// 	// 4 because its already swapping the leftover bytes
+// 	for (int i = 0; i < 4; ++i) {
+// 	    int bit = (frame[j] >> i) & 1;
+// 	    int mirror_bit = (frame[j] >> (7 - i)) & 1;
+//
+// 	    set_bit(&frame[j], 7 - i, bit);
+// 	    set_bit(&frame[j], i, mirror_bit);
+// 	}
+//     }
+// }
 
 char *build_ws_frame(ws_frame *frame) {
     size_t frame_size = sizeof_frame(frame->payload_length);
@@ -192,7 +198,7 @@ char *build_ws_frame(ws_frame *frame) {
 }
 
 char *generate_masking_key() {
-    // 32-bit
+    // 4-bytes - 32-bits
     char *key = malloc(4);
 
     srand(time(NULL));
