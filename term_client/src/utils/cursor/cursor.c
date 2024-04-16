@@ -1,7 +1,6 @@
 #include "cursor.h"
 
 #include <stdlib.h>
-#include <string.h>
 
 void add_data(CursorData **h_data, char c) {
     if (*h_data == NULL) {
@@ -63,7 +62,6 @@ void remove_data(int index, CursorData **h_data) {
     free(h_data_buffer);
 }
 
-// TODO: fix corrupted top size memory error
 void free_cursor_data(CursorData **h_data) {
     size_t d_size = data_size(*h_data);
     CursorData *free_buffer;
@@ -91,14 +89,14 @@ size_t data_size(CursorData *h_data) {
 
 char* concatenate_string(CursorData *h_data) {
     size_t s_size = data_size(h_data);
-    char *c_string = malloc(sizeof(s_size) + 1);
-    *c_string = '\0';
-
+    char *c_string = malloc((s_size + 1) * sizeof(char));
     CursorData *h_data_buffer = h_data;
-    while(h_data_buffer != NULL) {
-	strcat(c_string, &h_data_buffer->c);
+
+    for (int i = 0; i < s_size; ++i) {
+	c_string[i] = h_data_buffer->c;
 	h_data_buffer = h_data_buffer->n_node;
     }
+    c_string[s_size] = '\0';
 
     return c_string;
 }
