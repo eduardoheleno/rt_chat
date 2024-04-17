@@ -202,7 +202,8 @@ char *generate_masking_key() {
     char *key = malloc(4);
 
     srand(time(NULL));
-    
+   
+    // range of ASCII characters
     int min_number = 33;
     int max_number = 126;
 
