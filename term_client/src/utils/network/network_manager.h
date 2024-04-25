@@ -40,8 +40,9 @@ int send_request(char *message, char *response_buf);
 int connect_websocket(char *username);
 char *extract_access_token(char *response);
 
-char *build_ws_frame(ws_frame *frame);
+char *build_ws_frame(ws_frame *frame, size_t frame_size);
+size_t sizeof_frame(int payload_length);
 char *generate_masking_key();
-char *xor_encrypt(char *payload, char masking_key[4]);
+char *xor_encrypt(char *payload, char masking_key[5]);
 
 #endif
