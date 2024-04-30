@@ -115,6 +115,50 @@ char *build_ws_frame(ws_frame *frame, size_t frame_size) {
     return built_frame;
 }
 
+unsigned short extract_bits(char value, int begin, int end) {
+    unsigned short mask = (1 << (end - begin)) - 1;
+    return (value >> begin) & mask;
+}
+
+ws_server_message extract_message(char *frame_buffer) {
+    ws_server_message server_message;
+
+    unsigned int payload_length = extract_bits(frame_buffer[1], 0, 7);
+    char extracted_payload[payload_length + 1];
+
+    // 2 is the byte position where the payload_data starts
+    int payload_start_index = 2;
+    memcpy(extracted_payload, frame_buffer+payload_start_index, payload_length);
+    extracted_payload[payload_length] = '\0';
+
+    unsigned int message_size = 0;
+    char tmp_char = extracted_payload[message_size];
+    while (tmp_char != ';') {
+	tmp_char = extracted_payload[++message_size];
+    }
+
+    char *message = malloc(message_size + 1);
+    memcpy(message, extracted_payload, message_size);
+    message[message_size] = '\0';
+
+    unsigned int username_size = 0;
+    unsigned int size_limit = ++message_size;
+    tmp_char = extracted_payload[size_limit];
+    while (tmp_char != '\0') {
+	++username_size;
+	tmp_char = extracted_payload[++size_limit];
+    }
+
+    char *username = malloc(username_size + 1);
+    memcpy(username, extracted_payload+message_size, username_size);
+    username[username_size] = '\0';
+
+    server_message.username = username;
+    server_message.message = message;
+
+    return server_message;
+}
+
 char *generate_masking_key() {
     // 4-bytes - 32-bits + 1 '\0'
     char *key = malloc(5);

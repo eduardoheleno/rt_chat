@@ -10,7 +10,7 @@ int listen_user_chat_input(void *arg) {
 
     for(;;) {
 	ws_frame frame;
-	char *user_message = user_input_listener(w, 0, getmaxy(w) - 2);
+	char *user_message = user_input_listener(w, 0, getmaxy(w) - 1);
 	char *key = generate_masking_key();
 
 	frame.fin = 1;

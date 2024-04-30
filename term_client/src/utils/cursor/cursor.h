@@ -20,7 +20,6 @@ void remove_data(int index, CursorData **h_data);
 void free_cursor_data(CursorData **h_data);
 size_t data_size(CursorData *h_data);
 char* concatenate_string(CursorData *h_data);
-
 char* user_input_listener(WINDOW *w, int minx_pos, int y_pos);
 
 #endif
