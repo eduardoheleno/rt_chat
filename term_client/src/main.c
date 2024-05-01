@@ -43,7 +43,7 @@ int main() {
 
 	switch (g_ui_thread_execution_code) {
 	    case SHOW_CHAT_SCREEN_CODE:
-		ui_handler = draw_chat_ui;
+		ui_handler = chat_listen_network;
 		input_handler = listen_user_chat_input;
 		break;
 	}

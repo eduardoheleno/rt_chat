@@ -3,6 +3,6 @@
 
 #include <ncurses.h>
 
-int draw_chat_ui(void *arg);
+int chat_listen_network(void *arg);
 
 #endif
