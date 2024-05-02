@@ -1,10 +1,8 @@
-#include "./ui/login/login_ui.h"
-#include "./ui/chat/chat_ui.h"
-
-#include "./input/login/login_input.h"
-#include "./input/chat/chat_input.h"
-
-#include "./utils/thread/thread_helper.h"
+#include "ui/login_ui.h"
+#include "ui/chat_ui.h"
+#include "input/chat_input.h"
+#include "input/login_input.h"
+#include "utils/thread_helper.h"
 
 #include <threads.h>
 #include <sys/socket.h>

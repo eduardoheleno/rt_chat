@@ -1,9 +1,8 @@
-#include "login_input.h"
-
-#include "../../ui/login/login_ui.h"
-#include "../../utils/cursor/cursor.h"
-#include "../../utils/thread/thread_helper.h"
-#include "../../utils/network/network_manager.h"
+#include "input/login_input.h"
+#include "ui/login_ui.h"
+#include "utils/cursor.h"
+#include "utils/thread_helper.h"
+#include "utils/network_manager.h"
 
 extern int g_sockfd;
 

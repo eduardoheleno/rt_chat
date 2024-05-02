@@ -1,5 +1,4 @@
-#include "login_ui.h"
-
+#include "ui/login_ui.h"
 #include <ncurses.h>
 
 int draw_text_inputs(void *arg) {

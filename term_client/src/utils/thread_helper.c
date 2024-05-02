@@ -1,5 +1,4 @@
-#include "thread_helper.h"
-
+#include "utils/thread_helper.h"
 #include <threads.h>
 
 extern int g_ui_thread_execution_code;

@@ -1,5 +1,4 @@
-#include "cursor.h"
-
+#include "utils/cursor.h"
 #include <stdlib.h>
 
 void add_data(CursorData **h_data, char c) {

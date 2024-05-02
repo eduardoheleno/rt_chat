@@ -1,6 +1,5 @@
-#include "network_manager.h"
+#include "utils/network_manager.h"
 #include <ncurses.h>
-
 #include <stdbool.h>
 #include <time.h>
 

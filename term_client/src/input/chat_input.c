@@ -1,7 +1,6 @@
-#include "chat_input.h"
-
-#include "../../utils/cursor/cursor.h"
-#include "../../utils/network/network_manager.h"
+#include "input/chat_input.h"
+#include "utils/cursor.h"
+#include "utils/network_manager.h"
 
 extern int g_sockfd;
 
