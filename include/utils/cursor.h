@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <ncurses.h>
 
+#define KEY_ESC 27
+
 typedef struct CursorData {
     char c;
     struct CursorData *n_node;

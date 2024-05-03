@@ -106,6 +106,10 @@ char *build_ws_frame(ws_frame *frame, size_t frame_size) {
 	built_frame[i] |= frame->masking_key[i - masking_key_index];
     }
 
+    if (frame->opcode == CLOSE) {
+	return built_frame;
+    }
+
     for (int i = payload_data_index; i < frame_size; ++i) {
 	built_frame[i] |= frame->payload_data[i - payload_data_index];
     }

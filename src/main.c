@@ -3,6 +3,7 @@
 #include "input/chat_input.h"
 #include "input/login_input.h"
 #include "utils/thread_helper.h"
+#include "utils/network_manager.h"
 
 #include <threads.h>
 #include <sys/socket.h>
@@ -17,6 +18,13 @@ mtx_t g_execution_code_mtx;
 
 int g_ui_thread_execution_code = 0;
 int g_sockfd;
+
+ws_server_message *messages;
+int scroll_pos = 0;
+int messages_count = 0;
+
+void exit_program();
+void close_websocket();
 
 int main() {
     WINDOW *w = initscr();
@@ -58,7 +66,32 @@ int main() {
 	mtx_unlock(&g_execution_code_mtx);
     }
 
-    endwin();
+    close_websocket();
+    exit_program();
 
     return 0;
+}
+
+void close_websocket() {
+    char *key = generate_masking_key();
+
+    ws_frame frame;
+    frame.fin = 1;
+    frame.mask = 1;
+    frame.masking_key = key;
+    frame.opcode = CLOSE;
+
+    char *close_frame = build_ws_frame(&frame, 0);
+    send(g_sockfd, close_frame, sizeof(close_frame), 0);
+}
+
+void exit_program() {
+    close(g_sockfd);
+    for (int i = 0; i < messages_count; ++i) {
+	free(messages[i].message);
+	free(messages[i].username);
+    }
+
+    free(messages);
+    endwin();
 }

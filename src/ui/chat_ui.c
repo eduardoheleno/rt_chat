@@ -1,28 +1,30 @@
 #include "ui/chat_ui.h"
 #include "utils/network_manager.h"
+#include <ncurses.h>
 
-int cursor = 0;
-ws_server_message *messages;
-int messages_count = 0;
+#define MIN(a, b) (a < b) ? a : b
+
+extern ws_server_message *messages;
+extern int scroll_pos;
+extern int messages_count;
+
+// temporary
+int max_visible_messages = 10;
+// int max_visible_messages = getmaxy(w) - 1;
 
 extern int g_sockfd;
 
-int draw_chat_ui(WINDOW *w, int *cursor) {
-    int max_visible_messages = 20;
-    int limit;
-    if (max_visible_messages + *cursor > messages_count) limit = messages_count; else limit = max_visible_messages + *cursor;
-
+void draw_chat_ui(WINDOW *w) {
+    int limit = MIN(max_visible_messages + scroll_pos, messages_count);
     wclear(w);
 
     int row_counter = 0;
-    for (int i = *cursor; i < limit; ++i) {
+    for (int i = scroll_pos; i < limit; ++i) {
 	mvwprintw(w, row_counter, 0, "%s: %s", messages[i].username, messages[i].message);
 	row_counter++;
     }
 
     wrefresh(w);
-
-    return 0;
 }
 
 int chat_listen_network(void *arg) {
@@ -36,7 +38,12 @@ int chat_listen_network(void *arg) {
 	messages = realloc(messages, ++messages_count*sizeof(ws_server_message));
 	messages[messages_count - 1] = server_message;
 
-	draw_chat_ui(w, &cursor);
+	int limit = MIN(max_visible_messages + scroll_pos, messages_count);
+	if (messages_count > limit) {
+	    scroll_pos = messages_count - max_visible_messages;
+	}
+
+	draw_chat_ui(w);
     }
 
     return 0;

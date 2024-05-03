@@ -1,4 +1,6 @@
 #include "utils/cursor.h"
+#include "ui/chat_ui.h"
+#include "utils/thread_helper.h"
 #include <stdlib.h>
 
 void add_data(CursorData **h_data, char c) {
@@ -100,12 +102,50 @@ char* concatenate_string(CursorData *h_data) {
     return c_string;
 }
 
+// the right thing to do is use mutex to access this extern variables
+// cause they're been used in two threads at the same time
+extern int scroll_pos;
+extern int messages_count;
+
+void scroll_up(WINDOW *w) {
+    if (scroll_pos > 0) {
+	scroll_pos--;
+	draw_chat_ui(w);
+    }
+}
+
+void scroll_down(WINDOW *w) {
+    if (scroll_pos < messages_count - 1) {
+	scroll_pos++;
+	draw_chat_ui(w);
+    }
+}
+
 char* user_input_listener(WINDOW *w, int minx_pos, int y_pos) {
     Cursor c; c.x = 0; c.h_data = NULL;
     int ui_pos_tracker = minx_pos;
+    bool should_exit = FALSE;
 
     for(;;) {
 	int pressed_char = wgetch(w);
+
+	if (pressed_char == KEY_ESC) {
+	    should_exit = TRUE;
+	}
+
+	if (pressed_char == 'q' && should_exit == TRUE) {
+	    send_ui_signal(EXIT_CODE);
+	}
+
+	if (pressed_char == KEY_UP) {
+	    scroll_up(w);
+	    continue;
+	}
+
+	if (pressed_char == KEY_DOWN) {
+	    scroll_down(w);
+	    continue;
+	}
 
 	if (pressed_char == '\n') {
 	    char *c_string = concatenate_string(c.h_data);
